@@ -149,6 +149,7 @@ const artistData = [
         "upcomingEvents": "SZA will perform at the 2024 Coachella Festival on April 12, 2024. Tickets available at the Coachella website."
     }
 ];
+
 // Middleware to serve static files (like images)
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -156,18 +157,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/api/artists', (req, res) => {
     res.json(artistData);
 });
-
-// Serve the React app
-app.use(express.static(path.join(__dirname, 'build')));
-
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
 
 // New route for song data
 const songs = [
@@ -204,4 +193,15 @@ const songs = [
 
 app.get('/api/songs', (req, res) => {
     res.json(songs); // Sends songs data
+});
+
+// Serve the React app (if applicable)
+app.use(express.static(path.join(__dirname, 'build')));
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
