@@ -180,7 +180,7 @@ const songs = [
             { user: "Louiss", review: "I love this album so much, I agree, I can literally feel his lyrics." },
             { user: "Jes444", review: "5/10. I feel like it's kinda basic, I don't see what you guys are talking about." },
         ],
-        image: "theweeknd3.jpg",
+        image: "/images/theweeknd3.jpg",
     },
     {
         title: "Normal Girl",
@@ -189,7 +189,7 @@ const songs = [
         otherReviews: [
             { user: "Mayajs34", review: "10/10 for me. I've never heard something more relatable." },
         ],
-        image: "sza.jpg",
+        image: "/images/sza.jpg",
     },
     {
         title: "Cry",
@@ -199,7 +199,7 @@ const songs = [
             { user: "mikeR334", review: "I cry to this song every day." },
             { user: "burgers50", review: "1/10, all their songs sound the same." },
         ],
-        image: "cas.jpg",
+        image: "/images/cas.jpg",
     },
 ];
 
