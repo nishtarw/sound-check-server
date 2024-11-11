@@ -149,7 +149,6 @@ const artistData = [
         "upcomingEvents": "SZA will perform at the 2024 Coachella Festival on April 12, 2024. Tickets available at the Coachella website."
     }
 ];
-
 // Middleware to serve static files (like images)
 app.use(express.static(path.join(__dirname, 'public')));
 
