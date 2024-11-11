@@ -1,8 +1,22 @@
-const express = require('express');
+const express = require("express");
+const cors = require("cors");
 const app = express();
-const path = require('path');
+const Joi = require("joi");
+app.use(cors());
+app.use(express.static("public"));
+const multer = require("multer");
 
-const PORT = process.env.PORT || 5000;
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./public/images/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
+
 
 // Sample artist data
 const artistData = [
@@ -150,8 +164,6 @@ const artistData = [
     }
 ];
 
-// Middleware to serve static files (like images)
-app.use(express.static(path.join(__dirname, 'public')));
 
 // Endpoint to send artist data
 app.get('/api/artists', (req, res) => {
@@ -195,13 +207,11 @@ app.get('/api/songs', (req, res) => {
     res.json(songs); // Sends songs data
 });
 
-// Serve the React app (if applicable)
-app.use(express.static(path.join(__dirname, 'build')));
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+  });
+  
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-});
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+  app.listen(5000, () => {
+    console.log("Listening....");
+  });
