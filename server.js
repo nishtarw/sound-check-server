@@ -1,43 +1,22 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
-const Joi = require("joi");
-
 const app = express();
+const Joi = require("joi");
 app.use(cors());
-app.use(express.json()); // To parse JSON data from requests
+app.use(express.static("public"));
+const multer = require("multer");
 
-// Connect to MongoDB
-mongoose
-  .connect("mongodb+srv://nishtasr04:Nishta@soundcheck.trp6u.mongodb.net/?retryWrites=true&w=majority&appName=soundcheck", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => console.error("Error connecting to MongoDB:", err));
-
-// Define the Comment schema
-const commentSchema = new mongoose.Schema({
-  songId: {
-    type: String,
-    required: true,
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./public/images/");
   },
-  comment: {
-    type: String,
-    required: true,
-    minlength: 1,
-    maxlength: 300,
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
   },
 });
 
-// Create the Comment model
-const Comment = mongoose.model("Comment", commentSchema);
+const upload = multer({ storage: storage });
 
-// Joi validation schema for comments
-const commentValidationSchema = Joi.object({
-  songId: Joi.string().required(),
-  comment: Joi.string().min(1).max(300).required(),
-});
 
 // Sample artist data
 const artistData = [
@@ -190,6 +169,12 @@ const artistData = [
     }
 ];
 
+
+// Endpoint to send artist data
+app.get('/api/artists', (req, res) => {
+    res.json(artistData);
+});
+
 // New route for song data
 const songs = [
     {
@@ -211,63 +196,16 @@ const songs = [
         image: "/images/cas.jpg",
     },
 ];
-// Routes
-app.get("/api/artists", (req, res) => {
-  res.send(artistData);
+
+app.get('/api/songs', (req, res) => {
+    res.json(songs); // Sends songs data
 });
 
-app.get("/api/songs", (req, res) => {
-  res.send(songs);
-});
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + "/index.html");
+  });
+  
 
-// POST route for adding a comment
-app.post("/api/comments", async (req, res) => {
-  const { error } = commentValidationSchema.validate(req.body);
-  if (error) return res.status(400).send({ success: false, message: error.details[0].message });
-
-  const { songId, comment } = req.body;
-
-  try {
-    const newComment = new Comment({
-      songId,
-      comment,
-    });
-
-    await newComment.save();
-    res.status(201).send({ success: true, message: "Comment added successfully!" });
-  } catch (err) {
-    console.error("Error saving comment:", err);
-    res.status(500).send({ success: false, message: "Internal server error" });
-  }
-});
-
-// GET route for fetching comments for a specific song
-app.get("/api/comments/:songId", async (req, res) => {
-  try {
-    const comments = await Comment.find({ songId: req.params.songId });
-    res.send(comments);
-  } catch (err) {
-    console.error("Error fetching comments:", err);
-    res.status(500).send({ success: false, message: "Internal server error" });
-  }
-});
-
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  app.listen(5000, () => {
+    console.log("Listening....");
+  });
