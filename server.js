@@ -237,7 +237,7 @@ app.post("/api/songs", upload.single("image"), (req, res) => {
     title: req.body.title,
     artist: req.body.artist,
     review: req.body.review,
-    image: "images/" + req.file.filename, 
+    image: "/images/" + req.file.filename, 
   };
 
   songs.push(newSongReview); 
