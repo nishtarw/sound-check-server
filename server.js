@@ -1,22 +1,25 @@
+
 const express = require("express");
 const cors = require("cors");
-const app = express();
-const Joi = require("joi");
-app.use(cors());
-app.use(express.static("public"));
 const multer = require("multer");
+const Joi = require("joi");
 
+const app = express();
+app.use(cors());
+app.use(express.json());
+app.use("/uploads", express.static("public/images")); // Serve uploaded images statically
+
+// Configure Multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./public/images/");
+    cb(null, "./public/images/"); // Save images in the "public/images" folder
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(null, Date.now() + "-" + file.originalname); // Unique filename to avoid overwrites
   },
 });
 
 const upload = multer({ storage: storage });
-
 
 // Sample artist data
 const artistData = [
@@ -169,43 +172,89 @@ const artistData = [
     }
 ];
 
-
-// Endpoint to send artist data
-app.get('/api/artists', (req, res) => {
-    res.json(artistData);
-});
-
-// New route for song data
+// Song data with reviews
 const songs = [
-    {
-        title: "Faith",
-        artist: "The Weeknd",
-        review: "Giving this song a 8/10. This song by The Weeknd is definitely one of my favorites from the album...",
-        image: "/images/theweeknd3.jpg",
-    },
-    {
-        title: "Normal Girl",
-        artist: "SZA",
-        review: "Giving this song a 7/10. I love the concept of the song because it feels relatable...",
-        image: "/images/sza.jpg",
-    },
-    {
-        title: "Cry",
-        artist: "Cigarettes After Sex",
-        review: "10/10. This is my go-to crying song. It features the most beautiful instrumentation...",
-        image: "/images/cas.jpg",
-    },
+  {
+    title: "Faith",
+    artist: "The Weeknd",
+    review: "Giving this song a 8/10. This song by The Weeknd is definitely one of my favorites from the album...",
+    image: "/uploads/theweeknd3.jpg",
+  },
+  {
+    title: "Normal Girl",
+    artist: "SZA",
+    review: "Giving this song a 7/10. I love the concept of the song because it feels relatable...",
+    image: "/uploads/sza.jpg",
+  },
+  {
+    title: "Cry",
+    artist: "Cigarettes After Sex",
+    review: "10/10. This song brings a sense of melancholy that I absolutely love...",
+    image: "/uploads/cigarettesafters.jpg",
+  },
 ];
 
-app.get('/api/songs', (req, res) => {
-    res.json(songs); // Sends songs data
+// Joi schema for validating song reviews
+const songReviewSchema = Joi.object({
+  title: Joi.string().min(1).required(), // Title (required)
+  artist: Joi.string().min(1).required(), // Artist name (required)
+  review: Joi.string().min(10).required(), // Review text (required)
 });
 
-app.get("/", (req, res) => {
-    res.sendFile(__dirname + "/index.html");
-  });
-  
+// Endpoint to send artist data
+app.get("/api/artists", (req, res) => {
+  res.json(artistData);
+});
 
-  app.listen(5000, () => {
-    console.log("Listening....");
+// Endpoint to get song reviews
+app.get("/api/songs", (req, res) => {
+  res.json(songs);
+});
+
+// POST endpoint to add a new song review with an image
+app.post("/api/songs", upload.single("image"), (req, res) => {
+  // Validate text data
+  const { error } = songReviewSchema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      message: "Invalid data format.",
+      details: error.details,
+    });
+  }
+
+  // Ensure the file was uploaded
+  if (!req.file) {
+    return res.status(400).json({
+      message: "Image file is required.",
+    });
+  }
+
+  // Add the new song review to the array
+  const newSongReview = {
+    title: req.body.title,
+    artist: req.body.artist,
+    review: req.body.review,
+    image: "/uploads/" + req.file.filename, // Save path to uploaded image
+  };
+
+  songs.push(newSongReview); // Add the review to the array
+
+  res.status(201).json({
+    message: "Song review added successfully!",
+    newSongReview: newSongReview,
   });
+});
+
+// Start the server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
+
+
+
+
+
+
