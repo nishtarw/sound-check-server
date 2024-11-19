@@ -7,15 +7,17 @@ const Joi = require("joi");
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use("/uploads", express.static("public/images")); // Serve uploaded images statically
+app.use(express.static("public"));
 
-// Configure Multer for file uploads
+
+
+// Mutler
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "./public/images/"); // Save images in the "public/images" folder
+    cb(null, "./public/images/"); 
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname); // Unique filename to avoid overwrites
+    cb(null, Date.now() + "-" + file.originalname); 
   },
 });
 
@@ -178,42 +180,42 @@ const songs = [
     title: "Faith",
     artist: "The Weeknd",
     review: "Giving this song a 8/10. This song by The Weeknd is definitely one of my favorites from the album...",
-    image: "/uploads/theweeknd3.jpg",
+    image: "/images/theweeknd3.jpg",
   },
   {
     title: "Normal Girl",
     artist: "SZA",
     review: "Giving this song a 7/10. I love the concept of the song because it feels relatable...",
-    image: "/uploads/sza.jpg",
+    image: "/images/sza.jpg",
   },
   {
     title: "Cry",
     artist: "Cigarettes After Sex",
     review: "10/10. This song brings a sense of melancholy that I absolutely love...",
-    image: "/uploads/cigarettesafters.jpg",
+    image: "/images/cas.jpg",
   },
 ];
 
-// Joi schema for validating song reviews
+// Joi 
 const songReviewSchema = Joi.object({
-  title: Joi.string().min(1).required(), // Title (required)
-  artist: Joi.string().min(1).required(), // Artist name (required)
-  review: Joi.string().min(10).required(), // Review text (required)
+  title: Joi.string().min(1).required(), 
+  artist: Joi.string().min(1).required(), 
+  review: Joi.string().min(10).required(), 
 });
 
-// Endpoint to send artist data
+
 app.get("/api/artists", (req, res) => {
   res.json(artistData);
 });
 
-// Endpoint to get song reviews
+
 app.get("/api/songs", (req, res) => {
   res.json(songs);
 });
 
-// POST endpoint to add a new song review with an image
+
 app.post("/api/songs", upload.single("image"), (req, res) => {
-  // Validate text data
+  
   const { error } = songReviewSchema.validate(req.body);
 
   if (error) {
@@ -223,22 +225,22 @@ app.post("/api/songs", upload.single("image"), (req, res) => {
     });
   }
 
-  // Ensure the file was uploaded
+  
   if (!req.file) {
     return res.status(400).json({
       message: "Image file is required.",
     });
   }
 
-  // Add the new song review to the array
+  
   const newSongReview = {
     title: req.body.title,
     artist: req.body.artist,
     review: req.body.review,
-    image: "/uploads/" + req.file.filename, // Save path to uploaded image
+    image: "images/" + req.file.filename, 
   };
 
-  songs.push(newSongReview); // Add the review to the array
+  songs.push(newSongReview); 
 
   res.status(201).json({
     message: "Song review added successfully!",
