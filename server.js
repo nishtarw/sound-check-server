@@ -171,6 +171,7 @@ const artistData = [
   }
 ];
 
+
 // Connect to MongoDB
 mongoose
   .connect("mongodb+srv://nishtasr04:Nishta@soundcheck.trp6u.mongodb.net/?retryWrites=true&w=majority&appName=soundcheck")
@@ -195,17 +196,13 @@ const songReviewSchema = Joi.object({
 
 // Routes
 
-// GET All Artists (Static)
-app.get("/api/artists", (req, res) => {
-  res.json(artistData);
-});
-
 // GET All Songs
 app.get("/api/songs", async (req, res) => {
   try {
     const songs = await Song.find();
     res.json(songs);
   } catch (error) {
+    console.error("Error fetching songs:", error);  // Added error log
     res.status(500).json({ message: "Error fetching songs.", error });
   }
 });
@@ -228,12 +225,18 @@ app.post("/api/songs", upload.single("image"), async (req, res) => {
     const savedSong = await newSong.save();
     res.status(201).json({ message: "Song review added successfully!", savedSong });
   } catch (error) {
+    console.error("Error saving song:", error);  // Added error log
     res.status(500).json({ message: "Error saving song.", error });
   }
 });
 
 // PUT (Edit) a Song Review
 app.put("/api/songs/:id", upload.single("image"), async (req, res) => {
+  // Check if the ID is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: "Invalid song ID format." });
+  }
+
   const { error } = songReviewSchema.validate(req.body);
   if (error) {
     return res.status(400).json({ message: "Invalid data format.", details: error.details });
@@ -255,12 +258,18 @@ app.put("/api/songs/:id", upload.single("image"), async (req, res) => {
     }
     res.status(200).json({ message: "Song review updated successfully!", updatedSong });
   } catch (error) {
+    console.error("Error updating song:", error);  // Added error log
     res.status(500).json({ message: "Error updating song.", error });
   }
 });
 
 // DELETE a Song Review
 app.delete("/api/songs/:id", async (req, res) => {
+  // Check if the ID is a valid ObjectId
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: "Invalid song ID format." });
+  }
+
   try {
     const deletedSong = await Song.findByIdAndDelete(req.params.id);
     if (!deletedSong) {
@@ -268,6 +277,7 @@ app.delete("/api/songs/:id", async (req, res) => {
     }
     res.status(200).json({ message: "Song review deleted successfully!", deletedSong });
   } catch (error) {
+    console.error("Error deleting song:", error);  // Added error log
     res.status(500).json({ message: "Error deleting song.", error });
   }
 });
